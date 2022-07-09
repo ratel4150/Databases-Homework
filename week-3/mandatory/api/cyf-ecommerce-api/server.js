@@ -150,7 +150,7 @@ app.put("/customers/:customerId", function (req, res) {
   const updateCustomer=[req.params.customerId,req.body.name,req.body.address,req.body.city,req.body.country]
   
   const customerId=req.params.customerId
-  
+
   pool
   .query("UPDATE customers SET name=$1,address=$2,city=$3,country=$4 WHERE id=$5", [updateCustomer[1],updateCustomer[2],updateCustomer[3],updateCustomer[4] ,updateCustomer[0]])
   .then(() => res.send(`Customer ${customerId} updated!`))
