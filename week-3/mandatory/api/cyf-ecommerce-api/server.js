@@ -112,18 +112,20 @@ app.post("/customers/:customerId/orders", function (req, res) {
  const newOrderDate=req.body.newOrderDate
  const newOrderReference=req.body.newOrderReference
 
-  
 
-  if (!Number.isInteger(customerId) || customerId <= 0) {
+
+  console.log(typeof customerId);
+
+  if (!Number.isInteger(Number(customerId)) || customerId <= 0) {
     return res
       .status(400)
       .send("The number of customer id should be a positive integer");
-  } 
+  }  
 
 
 
   pool
-    .query("select * from orders where customer_id=$1", [customerId])
+    .query("select * from customers where id=$1", [customerId])
     .then((result) => {
       if (result.rows.length > 0) {
         const query =
@@ -142,6 +144,21 @@ app.post("/customers/:customerId/orders", function (req, res) {
     .catch((e) => console.error(e));
 });
 
+
+app.put("/customers/:customerId", function (req, res) {
+
+  const updateCustomer=[req.params.customerId,req.body.name,req.body.address,req.body.city,req.body.country]
+  
+  const customerId=req.params.customerId
+  
+  pool
+  .query("UPDATE customers SET name=$1,address=$2,city=$3,country=$4 WHERE id=$5", [updateCustomer[1],updateCustomer[2],updateCustomer[3],updateCustomer[4] ,updateCustomer[0]])
+  .then(() => res.send(`Customer ${customerId} updated!`))
+  .catch((e) => console.error(e));
+ 
+ 
+   
+ });
 
 
 
