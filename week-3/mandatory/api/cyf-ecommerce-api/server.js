@@ -160,19 +160,29 @@ app.put("/customers/:customerId", function (req, res) {
 });
 
 app.delete("/orders/:orderId", function (req, res) {
-  const customerId=req.params.orderId
+  const customerId = req.params.orderId;
 
   pool
-    .query("DELETE FROM customers WHERE id=$1", [customerId])//primero
+    .query("DELETE FROM customers WHERE id=$1", [customerId]) //primero
     .then(() => {
       pool
         .query("DELETE FROM orders WHERE id=$1", [customerId])
         .then(() => res.send(`Customer ${customerId} deleted!`))
         .catch((e) => console.error(e));
     })
-    .catch((e) => console.error(e));
 
- 
+    .catch((e) => console.error(e));
+});
+
+app.get("/customers/:customerId/orders", function (req, res) {
+  const customerId = req.params.customerId;
+  pool
+    .query(
+      "select t4.name,order_reference,order_date,product_name,unit_price,supplier_name,quantity from orders as t1 inner join order_items as t2 on t1.id=t2.order_id inner join products as t3 on t2.product_id=t3.id inner join customers as t4 on t1.customer_id=t4.id inner join suppliers as t5 on t3.supplier_id=t5.id where t4.id=$1",
+      [customerId]
+    )
+    .then((result) => res.json(result.rows))
+    .catch((e) => console.error(e));
 });
 
 app.listen(3000, function () {
