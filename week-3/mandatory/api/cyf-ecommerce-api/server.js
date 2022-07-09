@@ -107,12 +107,9 @@ app.post("/products", function (req, res) {
 });
 /* ////////////////////////////////// */
 app.post("/customers/:customerId/orders", function (req, res) {
-  
- const customerId=req.params.customerId
- const newOrderDate=req.body.newOrderDate
- const newOrderReference=req.body.newOrderReference
-
-
+  const customerId = req.params.customerId;
+  const newOrderDate = req.body.newOrderDate;
+  const newOrderReference = req.body.newOrderReference;
 
   console.log(typeof customerId);
 
@@ -120,23 +117,17 @@ app.post("/customers/:customerId/orders", function (req, res) {
     return res
       .status(400)
       .send("The number of customer id should be a positive integer");
-  }  
-
-
+  }
 
   pool
     .query("select * from customers where id=$1", [customerId])
     .then((result) => {
       if (result.rows.length > 0) {
         const query =
-        "insert into orders (order_date,order_reference,customer_id)values($1,$2,$3)";
-      pool.query(query, [newOrderDate,newOrderReference, customerId]);
-       
+          "insert into orders (order_date,order_reference,customer_id)values($1,$2,$3)";
+        pool.query(query, [newOrderDate, newOrderReference, customerId]);
       } else {
-        return res
-        .status(400)
-        .send("a customer id not already exist!");
-       
+        return res.status(400).send("a customer id not already exist!");
       }
     })
 
@@ -144,25 +135,45 @@ app.post("/customers/:customerId/orders", function (req, res) {
     .catch((e) => console.error(e));
 });
 
-
 app.put("/customers/:customerId", function (req, res) {
-
-  const updateCustomer=[req.params.customerId,req.body.name,req.body.address,req.body.city,req.body.country]
-  
-  const customerId=req.params.customerId
+  const updateCustomer = [
+    req.params.customerId,
+    req.body.name,
+    req.body.address,
+    req.body.city,
+    req.body.country,
+  ];
 
   pool
-  .query("UPDATE customers SET name=$1,address=$2,city=$3,country=$4 WHERE id=$5", [updateCustomer[1],updateCustomer[2],updateCustomer[3],updateCustomer[4] ,updateCustomer[0]])
-  .then(() => res.send(`Customer ${customerId} updated!`))
-  .catch((e) => console.error(e));
+    .query(
+      "UPDATE customers SET name=$1,address=$2,city=$3,country=$4 WHERE id=$5",
+      [
+        updateCustomer[1],
+        updateCustomer[2],
+        updateCustomer[3],
+        updateCustomer[4],
+        updateCustomer[0],
+      ]
+    )
+    .then(() => res.send(`Customer ${customerId} updated!`))
+    .catch((e) => console.error(e));
+});
+
+app.delete("/orders/:orderId", function (req, res) {
+  const customerId=req.params.orderId
+
+  pool
+    .query("DELETE FROM customers WHERE id=$1", [customerId])//primero
+    .then(() => {
+      pool
+        .query("DELETE FROM orders WHERE id=$1", [customerId])
+        .then(() => res.send(`Customer ${customerId} deleted!`))
+        .catch((e) => console.error(e));
+    })
+    .catch((e) => console.error(e));
+
  
- 
-   
- });
-
-
-
-
+});
 
 app.listen(3000, function () {
   console.log("Server is listening on port 3000. Ready to accept requests!");
