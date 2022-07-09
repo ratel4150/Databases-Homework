@@ -105,6 +105,47 @@ app.post("/products", function (req, res) {
     .then(() => res.send("Customer created!"))
     .catch((e) => console.error(e));
 });
+/* ////////////////////////////////// */
+app.post("/customers/:customerId/orders", function (req, res) {
+  
+ const customerId=req.params.customerId
+ const newOrderDate=req.body.newOrderDate
+ const newOrderReference=req.body.newOrderReference
+
+  
+
+  if (!Number.isInteger(customerId) || customerId <= 0) {
+    return res
+      .status(400)
+      .send("The number of customer id should be a positive integer");
+  } 
+
+
+
+  pool
+    .query("select * from orders where customer_id=$1", [customerId])
+    .then((result) => {
+      if (result.rows.length > 0) {
+        const query =
+        "insert into orders (order_date,order_reference,customer_id)values($1,$2,$3)";
+      pool.query(query, [newOrderDate,newOrderReference, customerId]);
+       
+      } else {
+        return res
+        .status(400)
+        .send("a customer id not already exist!");
+       
+      }
+    })
+
+    .then(() => res.send("Order created!"))
+    .catch((e) => console.error(e));
+});
+
+
+
+
+
 
 app.listen(3000, function () {
   console.log("Server is listening on port 3000. Ready to accept requests!");
